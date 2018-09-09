@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ReSharpNN.DataSet {
@@ -13,6 +14,10 @@ namespace ReSharpNN.DataSet {
     }
     public virtual IEnumerator<Datum> TestData() {
       foreach (var datum in TestDataList) yield return datum;
+    }
+    public virtual IEnumerator<Datum> MiniBatch(int size) {
+      var rand = new Random();
+      for (var i = 0; i < size; i++) yield return TrainingDataList[rand.Next(TrainingDataList.Count)];
     }
   }
 
