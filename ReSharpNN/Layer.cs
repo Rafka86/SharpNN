@@ -5,7 +5,11 @@ namespace ReSharpNN {
     internal float[] Unit;
     internal float[] Delta;
 
-    internal Layer() {}
+    internal Layer(int size, bool hasBias = false) {
+      Input = new float[size];
+      Unit = new float[size];
+      Delta = new float[size];
+    }
   }
 
 }
