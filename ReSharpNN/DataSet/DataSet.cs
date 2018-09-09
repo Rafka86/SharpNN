@@ -9,13 +9,13 @@ namespace ReSharpNN.DataSet {
     public int TrainingDataSize => TrainingDataList.Count;
     public int TestDataSize => TestDataList.Count;
 
-    public virtual IEnumerator<Datum> TrainingData() {
+    public virtual IEnumerable<Datum> TrainingData() {
       foreach (var datum in TrainingDataList) yield return datum;
     }
-    public virtual IEnumerator<Datum> TestData() {
+    public virtual IEnumerable<Datum> TestData() {
       foreach (var datum in TestDataList) yield return datum;
     }
-    public virtual IEnumerator<Datum> MiniBatch(int size) {
+    public virtual IEnumerable<Datum> MiniBatch(int size) {
       var rand = new Random();
       for (var i = 0; i < size; i++) yield return TrainingDataList[rand.Next(TrainingDataList.Count)];
     }

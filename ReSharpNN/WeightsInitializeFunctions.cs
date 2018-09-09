@@ -38,7 +38,7 @@ namespace ReSharpNN {
       for (var i = 0; i < sizeRow; i++)
         for (var j = 0; j < sizeColumn; j++)
           res[i * sizeColumn + j] =
-            Sqrt(-2.0f * Log(random.RandFloat(1e-8f)) * Sin(2.0f * PI * random.RandFloat(1e-8f)));
+            Sqrt(-2.0f * Log(random.RandFloat(1e-5f))) * Sin(2.0f * PI * random.RandFloat(1e-5f));
       return res;
     }
 
