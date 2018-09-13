@@ -1,8 +1,8 @@
-using ReSharpNN.Utils;
+using System;
 
-using static System.MathF;
+using SharpNN.Utils;
 
-namespace ReSharpNN {
+namespace SharpNN {
 
   public delegate float[] WeightsInitializeFunction(int sizeRow, int sizeColumn);
   
@@ -38,13 +38,13 @@ namespace ReSharpNN {
       for (var i = 0; i < sizeRow; i++)
         for (var j = 0; j < sizeColumn; j++)
           res[i * sizeColumn + j] =
-            Sqrt(-2.0f * Log(random.RandFloat(1e-5f))) * Sin(2.0f * PI * random.RandFloat(1e-5f));
+            MathF.Sqrt(-2.0f * MathF.Log(random.RandFloat(1e-5f))) * MathF.Sin(2.0f * MathF.PI * random.RandFloat(1e-5f));
       return res;
     }
 
     public static float[] Xavier(int sizeRow, int sizeColumn) {
       var res = Normal(sizeRow, sizeColumn);
-      var std = 1.0f / Sqrt(sizeColumn);
+      var std = 1.0f / MathF.Sqrt(sizeColumn);
       for (var i = 0; i < res.Length; i++)
         res[i] *= std;
       return res;
@@ -52,7 +52,7 @@ namespace ReSharpNN {
 
     public static float[] He(int sizeRow, int sizeColumn) {
       var res = Normal(sizeRow, sizeColumn);
-      var std = Sqrt(2.0f / sizeColumn);
+      var std = MathF.Sqrt(2.0f / sizeColumn);
       for (var i = 0; i < res.Length; i++)
         res[i] *= std;
       return res;

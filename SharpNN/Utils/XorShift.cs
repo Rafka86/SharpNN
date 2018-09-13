@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReSharpNN.Utils {
+namespace SharpNN.Utils {
 
   internal class XorShift {
     private readonly IEnumerator<uint> _r;

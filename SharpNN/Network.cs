@@ -2,12 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using static System.Console;
-
-using static ReSharpNN.UpdateFunctions;
-using static ReSharpNN.WeightsInitializeFunctions;
-
-namespace ReSharpNN {
+namespace SharpNN {
 
   public class Network {
     private readonly List<Layer> _layers = new List<Layer>();
@@ -28,7 +23,7 @@ namespace ReSharpNN {
       public static void SetErrorFunction(ErrorFunction errFunc) => _network._error = errFunc;
       
       public static void AddLayer(int size, UpdateFunction function = null, bool bias = true)
-        => _network._layers.Add(new Layer(size, function ?? ReLU, bias));
+        => _network._layers.Add(new Layer(size, function ?? UpdateFunctions.ReLU, bias));
 
       public static void AddConnection(WeightsInitializeFunction initFunction = null) {
         if (_network._layers.Count < 2) throw new ApplicationException("Not enough layers.");
@@ -38,7 +33,7 @@ namespace ReSharpNN {
         var lastIndex = _network._layers.Count - 1;
         var preLayer = _network._layers[lastIndex - 1];
         var postLayer = _network._layers[lastIndex];
-        _network._connections.Add(new Connection(preLayer, postLayer, initFunction ?? He));
+        _network._connections.Add(new Connection(preLayer, postLayer, initFunction ?? WeightsInitializeFunctions.He));
       }
       
       public static Network Create() {
@@ -95,9 +90,9 @@ namespace ReSharpNN {
 
     public bool CheckStatus() {
       var checkRelNums = LayersCount - 1 == ConnectionsCount;
-      WriteLine($"Check the numbers of Layers and Connections. : {checkRelNums}");
-      WriteLine($"# of Layers : {LayersCount}");
-      WriteLine($"# of Connections : {ConnectionsCount}");
+      Console.WriteLine($"Check the numbers of Layers and Connections. : {checkRelNums}");
+      Console.WriteLine($"# of Layers : {LayersCount}");
+      Console.WriteLine($"# of Connections : {ConnectionsCount}");
 
       return checkRelNums;
     }

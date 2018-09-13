@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ReSharpNN {
+namespace SharpNN {
 
   public delegate float[] UpdateFunction(float[] values);
 

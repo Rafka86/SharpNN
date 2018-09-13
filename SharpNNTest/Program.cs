@@ -1,13 +1,13 @@
-﻿using ReSharpNN;
-using ReSharpNN.DataSet;
+﻿using SharpNN;
+using SharpNN.DataSet;
 
 using static System.IO.Path;
 
-using static ReSharpNN.ErrorFunctions;
-using static ReSharpNN.UpdateFunctions;
-using static ReSharpNN.WeightsInitializeFunctions;
+using static SharpNN.ErrorFunctions;
+using static SharpNN.UpdateFunctions;
+using static SharpNN.WeightsInitializeFunctions;
 
-namespace ReSharpNNTest {
+namespace SharpNNTest {
 
   class Program {
     static void Main(string[] args) {

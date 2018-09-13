@@ -1,8 +1,6 @@
 using System.Text;
 
-using static ReSharpNN.UpdateDiffFunctions;
-
-namespace ReSharpNN {
+namespace SharpNN {
 
   internal class Layer {
     internal float[] Input { get; }
@@ -29,10 +27,10 @@ namespace ReSharpNN {
 
       DiffFunction ChooseDiffFunction() {
         switch (updFunc.Method.Name) {
-          case "Identity": return DiffIdentity;
-          case "Tanh": return DiffTanh;
-          case "Sigmoid": return DiffSigmoid;
-          case "ReLU": return DiffReLU;
+          case "Identity": return UpdateDiffFunctions.DiffIdentity;
+          case "Tanh": return UpdateDiffFunctions.DiffTanh;
+          case "Sigmoid": return UpdateDiffFunctions.DiffSigmoid;
+          case "ReLU": return UpdateDiffFunctions.DiffReLU;
           default: return null;
         }
       }

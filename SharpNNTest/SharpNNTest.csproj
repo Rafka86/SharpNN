@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReSharpNN\ReSharpNN.csproj" />
+      <ProjectReference Include="..\SharpNN\SharpNN.csproj" />
     </ItemGroup>
 
 </Project>

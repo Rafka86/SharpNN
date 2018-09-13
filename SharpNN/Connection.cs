@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ReSharpNN {
+namespace SharpNN {
 
   internal class Connection {
     private readonly Layer _preLayer;

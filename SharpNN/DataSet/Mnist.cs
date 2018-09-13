@@ -5,9 +5,7 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-using static System.IO.Path;
-
-namespace ReSharpNN.DataSet {
+namespace SharpNN.DataSet {
 
   public class Mnist : DataSet {
     private readonly int _imageSizeX;
@@ -20,16 +18,16 @@ namespace ReSharpNN.DataSet {
                  string testImageFile     = "t10k-images-idx3-ubyte") {
       //Setup data file paths.
       if (!Directory.Exists(path)) throw new ArgumentException($"Not found mnist directory at {path} .");
-      var trainingLabelFilePath = $"{path}{DirectorySeparatorChar.ToString()}{trainingLabelFile}";
+      var trainingLabelFilePath = $"{path}{Path.DirectorySeparatorChar.ToString()}{trainingLabelFile}";
       if (!File.Exists(trainingLabelFilePath))
         throw new ArgumentException($"Not found training label file at {trainingLabelFilePath} .");
-      var trainingImageFilePath = $"{path}{DirectorySeparatorChar.ToString()}{trainingImageFile}";
+      var trainingImageFilePath = $"{path}{Path.DirectorySeparatorChar.ToString()}{trainingImageFile}";
       if (!File.Exists(trainingImageFilePath))
         throw new ArgumentException($"Not found training image file at {trainingImageFilePath} .");
-      var testLabelFilePath = $"{path}{DirectorySeparatorChar.ToString()}{testLabelFile}";
+      var testLabelFilePath = $"{path}{Path.DirectorySeparatorChar.ToString()}{testLabelFile}";
       if (!File.Exists(trainingLabelFilePath))
         throw new ArgumentException($"Not found training label file at {testLabelFilePath} .");
-      var testImageFilePath = $"{path}{DirectorySeparatorChar.ToString()}{testImageFile}";
+      var testImageFilePath = $"{path}{Path.DirectorySeparatorChar.ToString()}{testImageFile}";
       if (!File.Exists(trainingImageFilePath))
         throw new ArgumentException($"Not found training image file at {testImageFilePath} .");
 
@@ -72,8 +70,8 @@ namespace ReSharpNN.DataSet {
     }
 
     public void OutputImages(string path) {
-      MakeImages(TrainingDataList, $"training{DirectorySeparatorChar.ToString()}");
-      MakeImages(TestDataList, $"test{DirectorySeparatorChar.ToString()}");
+      MakeImages(TrainingDataList, $"training{Path.DirectorySeparatorChar.ToString()}");
+      MakeImages(TestDataList, $"test{Path.DirectorySeparatorChar.ToString()}");
       
       void MakeImages(IReadOnlyList<Datum> targetList, string extraPath) {
         for (var i = 0; i < targetList.Count; i++) {

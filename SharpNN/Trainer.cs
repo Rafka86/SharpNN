@@ -1,8 +1,7 @@
+using System;
 using System.Collections.Generic;
 
-using static System.Console;
-
-namespace ReSharpNN {
+namespace SharpNN {
 
   public static class Trainer {
     public static float LearningRate { get; set; } = 0.01f;
@@ -12,8 +11,8 @@ namespace ReSharpNN {
       var trainingDataSize = data.TrainingDataSize;
       var iterationSize    = trainingDataSize / batchSize;
       for (var i = 0; i < epoch; i++) {
-        WriteLine($"Epoch {i}");
-        if (printLog) Write("Error : ");
+        Console.WriteLine($"Epoch {i}");
+        if (printLog) Console.Write("Error : ");
         for (var j = 0; j < iterationSize; j++) {
           network.ClearDeltaW();
           var error = 0.0f;
@@ -25,10 +24,10 @@ namespace ReSharpNN {
           }
 
           network.UpdateWeights(LearningRate);
-          if (printLog) Write($"\rError : {error / batchSize}");
+          if (printLog) Console.Write($"\rError : {error / batchSize}");
         }
 
-        if (printLog) WriteLine();
+        if (printLog) Console.WriteLine();
       }
     }
 
@@ -37,7 +36,7 @@ namespace ReSharpNN {
       var error = float.MaxValue;
       var it    = 0;
       while (error > limitError) {
-        WriteLine($"Epoch {it++}");
+        Console.WriteLine($"Epoch {it++}");
         error = 0.0f;
         foreach (var datum in data.TrainingData()) {
             network.SetInputs(datum.Input);
@@ -47,31 +46,31 @@ namespace ReSharpNN {
         }
         network.UpdateWeights(LearningRate);
         error /= data.TrainingDataSize;
-        if (printLog) WriteLine($"Error : {error}");
+        if (printLog) Console.WriteLine($"Error : {error}");
       }
     }
 
     public static void RegressionTest(Network network, DataSet.DataSet data) {
       foreach (var datum in data.TestData()) {
-        WriteLine($"Case : {string.Join(' ', datum.Input)}");
+        Console.WriteLine($"Case : {string.Join(' ', datum.Input)}");
         network.SetInputs(datum.Input);
         network.ForwardPropagation();
-        WriteLine($"Output : {string.Join(' ', network.Output)}");
+        Console.WriteLine($"Output : {string.Join(' ', network.Output)}");
       }
     }
 
     public static void ClusteringTest(Network network, DataSet.DataSet data) {
       var correct = 0.0f;
       var count = 0.0f;
-      WriteLine("Testing.");
-      Write($"Success Rate : {0.0f:  0.00%}");
+      Console.WriteLine("Testing.");
+      Console.Write($"Success Rate : {0.0f:  0.00%}");
       foreach (var datum in data.TestData()) {
         count += 1.0f;
         network.SetInputs(datum.Input);
         network.ForwardPropagation();
         var maxIdx = GetMaxIndex(network.Output);
         if (maxIdx == GetMaxIndex(datum.Output)) correct += 1.0f;
-        Write($"\rSuccess Rate : {correct / count:  0.00%}");
+        Console.Write($"\rSuccess Rate : {correct / count:  0.00%}");
       }
 
       int GetMaxIndex(IReadOnlyList<float> values) {

@@ -1,4 +1,4 @@
-namespace ReSharpNN.DataSet {
+namespace SharpNN.DataSet {
 
   public class XorDataSet : DataSet {
     public XorDataSet() {

@@ -1,4 +1,4 @@
-namespace ReSharpNN.DataSet {
+namespace SharpNN.DataSet {
 
   public struct Datum {
     public float[] Input { get; }

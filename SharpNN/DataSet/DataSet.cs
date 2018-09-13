@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ReSharpNN.DataSet {
+namespace SharpNN.DataSet {
 
   public abstract class DataSet {
     protected List<Datum> TrainingDataList { get; } = new List<Datum>();

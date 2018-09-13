@@ -1,6 +1,6 @@
 using System;
 
-namespace ReSharpNN {
+namespace SharpNN {
 
   public delegate float ErrorFunction(float[] output, float[] teacher);
 
