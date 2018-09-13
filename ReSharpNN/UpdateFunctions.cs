@@ -42,4 +42,30 @@ namespace ReSharpNN {
     }
   }
 
+  public static class UpdateDiffFunctions {
+    public static float[] DiffIdentity(float[] values) {
+      var res = new float[values.Length];
+      for (var i = 0; i < res.Length; i++) res[i] = 1.0f;
+      return res;
+    }
+
+    public static float[] DiffTanh(float[] values) {
+      var res = new float[values.Length];
+      for (var i = 0; i < res.Length; i++) res[i] = 1.0f - values[i] * values[i];
+      return res;
+    }
+
+    public static float[] DiffSigmoid(float[] values) {
+      var res = new float[values.Length];
+      for (var i = 0; i < res.Length; i++) res[i] = values[i] * (1.0f - values[i]);
+      return res;
+    }
+
+    public static float[] DiffReLU(float[] values) {
+      var res = new float[values.Length];
+      for (var i = 0; i < res.Length; i++) res[i] = values[i] > 0.0f ? 1.0f : 0.0f;
+      return res;
+    }
+  }
+
 }

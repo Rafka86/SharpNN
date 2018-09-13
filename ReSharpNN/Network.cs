@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using static System.Console;
+
 using static ReSharpNN.UpdateFunctions;
 using static ReSharpNN.WeightsInitializeFunctions;
 
@@ -10,14 +12,23 @@ namespace ReSharpNN {
   public class Network {
     private readonly List<Layer> _layers = new List<Layer>();
     private readonly List<Connection> _connections = new List<Connection>();
+    private Layer _inputLayer;
+    private Layer _outputLayer;
+
+    private ErrorFunction _error;
+    
+    public int LayersCount => _layers.Count;
+    public int ConnectionsCount => _connections.Count;
 
     public static class Factory {
       private static Network _network;
 
       public static void New() => _network = new Network();
 
-      public static void AddLayer(int size, UpdateFunction function = null, bool hasBias = false)
-        => _network._layers.Add(new Layer(size, function ?? ReLU, hasBias));
+      public static void SetErrorFunction(ErrorFunction errFunc) => _network._error = errFunc;
+      
+      public static void AddLayer(int size, UpdateFunction function = null, bool bias = true)
+        => _network._layers.Add(new Layer(size, function ?? ReLU, bias));
 
       public static void AddConnection(WeightsInitializeFunction initFunction = null) {
         if (_network._layers.Count < 2) throw new ApplicationException("Not enough layers.");
@@ -25,19 +36,27 @@ namespace ReSharpNN {
           throw new ApplicationException("There are enough connections.");
         
         var lastIndex = _network._layers.Count - 1;
-        var preLayerSize = _network._layers[lastIndex - 1].Size;
-        var postLayerSize = _network._layers[lastIndex].PureSize;
-        _network._connections.Add(new Connection(preLayerSize, postLayerSize, initFunction ?? He));
+        var preLayer = _network._layers[lastIndex - 1];
+        var postLayer = _network._layers[lastIndex];
+        _network._connections.Add(new Connection(preLayer, postLayer, initFunction ?? He));
+      }
+      
+      public static Network Create() {
+        if (_network._error == null) throw new ArgumentException("Error function is not defined.");
+        _network._inputLayer = _network._layers[0];
+        _network._outputLayer = _network._layers[_network.LayersCount - 1];
+        return _network;
       }
 
-      public static Network Create() => _network;
+      public static void Create(out Network network) => network = Create();
     }
 
-    public void ForwardPropagation(float[] input) {
-      var inputLayer = _layers[0];
+    public void SetInputs(float[] input) {
       for (var i = 0; i < input.Length; i++)
-        inputLayer.Unit[i] = input[i];
-
+        _inputLayer.Unit[i] = input[i];
+    }
+    
+    public void ForwardPropagation() {
       for (var i = 1; i < _layers.Count; i++) {
         var preLayer = _layers[i - 1];
         var connection = _connections[i - 1];
@@ -46,7 +65,42 @@ namespace ReSharpNN {
       }
     }
 
-    public float[] Output => _layers[_layers.Count - 1].Unit;
+    public void BackPropagation(float[] teacher) {
+      _outputLayer.CalculationOutputLayerDelta(teacher);
+
+      for (var i = LayersCount - 2; i >= 0; i--) {
+        var preLayer = _layers[i];
+        var connection = _connections[i];
+        var postLayer = _layers[i + 1];
+        
+        connection.CalculationDeltaW(preLayer, postLayer);
+        preLayer.CalculationDelta(postLayer, connection);
+      }
+    }
+
+    internal void ClearDeltaW() {
+      foreach (var connection in _connections)
+        connection.ClearDeltaW();
+    }
+
+    internal void UpdateWeights(float learningRate) {
+      foreach (var connection in _connections) {
+        connection.ApplyDeltaW(learningRate);
+      }
+    }
+    
+    public float[] Output => _outputLayer.Unit;
+
+    public float Error(float[] teacher) => _error(_outputLayer.Unit, teacher);
+
+    public bool CheckStatus() {
+      var checkRelNums = LayersCount - 1 == ConnectionsCount;
+      WriteLine($"Check the numbers of Layers and Connections. : {checkRelNums}");
+      WriteLine($"# of Layers : {LayersCount}");
+      WriteLine($"# of Connections : {ConnectionsCount}");
+
+      return checkRelNums;
+    }
     
     public string Dump(int dumpLevel = 1) {
       var sb = new StringBuilder();

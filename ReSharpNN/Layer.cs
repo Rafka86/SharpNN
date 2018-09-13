@@ -1,5 +1,7 @@
 using System.Text;
 
+using static ReSharpNN.UpdateDiffFunctions;
+
 namespace ReSharpNN {
 
   internal class Layer {
@@ -12,6 +14,7 @@ namespace ReSharpNN {
     internal bool HasBias { get; }
 
     private readonly UpdateFunction _function;
+    private readonly DiffFunction _diff;
     
     internal Layer(int size, UpdateFunction updFunc, bool hasBias) {
       Input = new float[size];
@@ -19,10 +22,22 @@ namespace ReSharpNN {
       Delta = new float[size];
 
       _function = updFunc;
+      _diff = ChooseDiffFunction();
       
       HasBias = hasBias;
-    }
+      if (HasBias) Unit[Input.Length] = 1.0f;
 
+      DiffFunction ChooseDiffFunction() {
+        switch (updFunc.Method.Name) {
+          case "Identity": return DiffIdentity;
+          case "Tanh": return DiffTanh;
+          case "Sigmoid": return DiffSigmoid;
+          case "ReLU": return DiffReLU;
+          default: return null;
+        }
+      }
+    }
+    
     internal void Update(Layer preLayer, Connection connection) {
       for (var i = 0; i < Input.Length; i++) Input[i] = 0.0f;
       for (var i = 0; i < connection.PostLayerSize; i++)
@@ -32,6 +47,21 @@ namespace ReSharpNN {
       var tmp = _function(Input);
       for (var i = 0; i < tmp.Length; i++)
         Unit[i] = tmp[i];
+    }
+
+    internal void CalculationOutputLayerDelta(float[] teacher) {
+      for (var i = 0; i < Delta.Length; i++)
+        Delta[i] = Unit[i] - teacher[i];
+    }
+
+    internal void CalculationDelta(Layer postLayer, Connection outConnection) {
+      var diff = _diff(Unit);
+      for (var i = 0; i < Delta.Length; i++) {
+        Delta[i] = 0.0f;
+        for (var k = 0; k < postLayer.Delta.Length; k++)
+          Delta[i] += postLayer.Delta[k] * outConnection[k, i];
+        Delta[i] *= diff[i];
+      }
     }
 
     internal string Dump(int dumpLevel) {
