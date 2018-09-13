@@ -43,6 +43,9 @@ namespace ReSharpNN.DataSet {
       using (var imFile = new BinaryReader(File.OpenRead(testImageFilePath)))
         MakeData(laFile, imFile, TestDataList);
 
+      InputDataSize = _imageSizeX * _imageSizeY;
+      OutputDataSize = 10;
+
       (int, int) MakeData(BinaryReader labelFile, BinaryReader imageFile, ICollection<Datum> dstList) {
         //Read and discard magic numbers.
         labelFile.ReadInt32();

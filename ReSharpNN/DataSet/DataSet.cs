@@ -8,6 +8,8 @@ namespace ReSharpNN.DataSet {
     protected List<Datum> TestDataList { get; } = new List<Datum>();
     public int TrainingDataSize => TrainingDataList.Count;
     public int TestDataSize => TestDataList.Count;
+    public int InputDataSize { get; protected set; } = 1;
+    public int OutputDataSize { get; protected set; } = 1;
 
     public virtual IEnumerable<Datum> TrainingData() {
       foreach (var datum in TrainingDataList) yield return datum;

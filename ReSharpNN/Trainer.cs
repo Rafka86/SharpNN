@@ -1,9 +1,11 @@
+using System.Collections.Generic;
+
 using static System.Console;
 
 namespace ReSharpNN {
 
   public static class Trainer {
-    public static float LearningRate { get; set; } = 0.5f;
+    public static float LearningRate { get; set; } = 0.01f;
 
     public static void Training(Network network, DataSet.DataSet data, int epoch = 1, int batchSize = 1,
                                 bool    printLog = false) {
@@ -12,9 +14,9 @@ namespace ReSharpNN {
       for (var i = 0; i < epoch; i++) {
         WriteLine($"Epoch {i}");
         if (printLog) Write("Error : ");
-        var error = 0.0f;
         for (var j = 0; j < iterationSize; j++) {
           network.ClearDeltaW();
+          var error = 0.0f;
           foreach (var datum in data.MiniBatch(batchSize)) {
             network.SetInputs(datum.Input);
             network.ForwardPropagation();
@@ -55,6 +57,32 @@ namespace ReSharpNN {
         network.SetInputs(datum.Input);
         network.ForwardPropagation();
         WriteLine($"Output : {string.Join(' ', network.Output)}");
+      }
+    }
+
+    public static void ClusteringTest(Network network, DataSet.DataSet data) {
+      var correct = 0.0f;
+      var count = 0.0f;
+      WriteLine("Testing.");
+      Write($"Success Rate : {0.0f:  0.00%}");
+      foreach (var datum in data.TestData()) {
+        count += 1.0f;
+        network.SetInputs(datum.Input);
+        network.ForwardPropagation();
+        var maxIdx = GetMaxIndex(network.Output);
+        if (maxIdx == GetMaxIndex(datum.Output)) correct += 1.0f;
+        Write($"\rSuccess Rate : {correct / count:  0.00%}");
+      }
+
+      int GetMaxIndex(IReadOnlyList<float> values) {
+        var res = 0;
+        var max = float.MinValue;
+        for (var i = 0; i < values.Count; i++) {
+          if (max >= values[i]) continue;
+          res = i;
+          max = values[i];
+        }
+        return res;
       }
     }
   }

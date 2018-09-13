@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ReSharpNN {
 
@@ -10,7 +11,7 @@ namespace ReSharpNN {
   public static class UpdateFunctions {
     public static float[] Identity(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = values[i];
+      Parallel.For(0, res.Length, i => { res[i] = values[i]; });
       return res;
     }
     
@@ -22,7 +23,7 @@ namespace ReSharpNN {
 
     public static float[] Sigmoid(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = 1.0f / (1.0f + MathF.Exp(-values[i]));
+      Parallel.For(0, res.Length, i => { res[i] = 1.0f / (1.0f + MathF.Exp(-values[i])); });
       return res;
     }
 
@@ -34,10 +35,10 @@ namespace ReSharpNN {
 
     public static float[] Softmax(float[] values) {
       var res = new float[values.Length];
-      var exp = values.Select(MathF.Exp).ToArray();
+      var max = values.Max();
+      var exp = values.AsParallel().Select(val => MathF.Exp(val - max)).ToArray();
       var sum = exp.Sum();
-      for (var i = 0; i < res.Length; i++)
-        res[i] = exp[i] / sum;
+      Parallel.For(0, res.Length, i => { res[i] = exp[i] / sum; });
       return res;
     }
   }
@@ -45,7 +46,7 @@ namespace ReSharpNN {
   public static class UpdateDiffFunctions {
     public static float[] DiffIdentity(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = 1.0f;
+      Parallel.For(0, res.Length, i => { res[i] = 1.0f; });
       return res;
     }
 
@@ -57,7 +58,7 @@ namespace ReSharpNN {
 
     public static float[] DiffSigmoid(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = values[i] * (1.0f - values[i]);
+      Parallel.For(0, res.Length, i => { res[i] = values[i] * (1.0f - values[i]); });
       return res;
     }
 
