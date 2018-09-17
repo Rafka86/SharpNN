@@ -1,4 +1,9 @@
 using System.Text;
+using System.Threading.Tasks;
+
+using SharpMKL;
+
+using static SharpNN.ActivateDiffFunctions;
 
 namespace SharpNN {
 
@@ -11,15 +16,15 @@ namespace SharpNN {
     internal int PureSize => Input.Length;
     internal bool HasBias { get; }
 
-    private readonly UpdateFunction _function;
+    internal ActivateFunction Function { get; }
     private readonly DiffFunction _diff;
     
-    internal Layer(int size, UpdateFunction updFunc, bool hasBias) {
+    internal Layer(int size, ActivateFunction updFunc, bool hasBias) {
       Input = new float[size];
       Unit = new float[size + (hasBias ? 1 : 0)];
       Delta = new float[size];
 
-      _function = updFunc;
+      Function = updFunc;
       _diff = ChooseDiffFunction();
       
       HasBias = hasBias;
@@ -27,39 +32,36 @@ namespace SharpNN {
 
       DiffFunction ChooseDiffFunction() {
         switch (updFunc.Method.Name) {
-          case "Identity": return UpdateDiffFunctions.DiffIdentity;
-          case "Tanh": return UpdateDiffFunctions.DiffTanh;
-          case "Sigmoid": return UpdateDiffFunctions.DiffSigmoid;
-          case "ReLU": return UpdateDiffFunctions.DiffReLU;
+          case "Identity": return DiffIdentity;
+          case "Tanh": return DiffTanh;
+          case "Sigmoid": return DiffSigmoid;
+          case "ReLU": return DiffReLU;
+          case "LeakyReLU": return DiffLeakyReLU;
           default: return null;
         }
       }
     }
     
     internal void Update(Layer preLayer, Connection connection) {
-      for (var i = 0; i < Input.Length; i++) Input[i] = 0.0f;
-      for (var i = 0; i < connection.PostLayerSize; i++)
-        for (var j = 0; j < connection.PreLayerSize; j++)
-          Input[i] += connection[i, j] * preLayer.Unit[j];
+      Blas2.gemv(BlasLayout.RowMajor, BlasTranspose.NoTrans,
+                 connection.PostLayerSize, connection.PreLayerSize, 1.0f, connection.Weight, connection.PreLayerSize,
+                 preLayer.Unit, 1, 0.0f, Input, 1);
 
-      var tmp = _function(Input);
-      for (var i = 0; i < tmp.Length; i++)
-        Unit[i] = tmp[i];
+      Blas1.copy(PureSize, Function(Input), 1, Unit, 1);
     }
 
     internal void CalculationOutputLayerDelta(float[] teacher) {
-      for (var i = 0; i < Delta.Length; i++)
-        Delta[i] = Unit[i] - teacher[i];
+      Parallel.For(0, Delta.Length, i => { Delta[i] = Unit[i] - teacher[i]; });
     }
 
     internal void CalculationDelta(Layer postLayer, Connection outConnection) {
       var diff = _diff(Unit);
-      for (var i = 0; i < Delta.Length; i++) {
-        Delta[i] = 0.0f;
-        for (var k = 0; k < postLayer.Delta.Length; k++)
-          Delta[i] += postLayer.Delta[k] * outConnection[k, i];
-        Delta[i] *= diff[i];
-      }
+      Parallel.For(0, Delta.Length, i => {
+                                      Delta[i] = 0.0f;
+                                      for (var k = 0; k < postLayer.Delta.Length; k++)
+                                        Delta[i] += postLayer.Delta[k] * outConnection[k, i];
+                                      Delta[i] *= diff[i];
+                                    });
     }
 
     internal string Dump(int dumpLevel) {
@@ -69,8 +71,8 @@ namespace SharpNN {
       sb.AppendLine("==================== Layer Infos ====================");
       sb.AppendLine($"Number of neurons              : {Unit.Length.ToString()}");
       //sb.AppendLine($"This layer is the output layer : {IsOutputLayer}");
-      sb.AppendLine($"This layer's function          : {_function.Method.Name}");
-      //sb.AppendLine($"This layer's delta             : {df.Method.Name}");
+      sb.AppendLine($"This layer's function          : {Function.Method.Name}");
+      sb.AppendLine($"This layer's delta             : {_diff?.Method.Name ?? "None"}");
 
       if (dumpLevel > 1) {
         sb.AppendLine("-------------------- Activities ---------------------");

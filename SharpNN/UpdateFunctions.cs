@@ -4,11 +4,20 @@ using System.Threading.Tasks;
 
 namespace SharpNN {
 
-  public delegate float[] UpdateFunction(float[] values);
+  public delegate float[] ActivateFunction(float[] values);
 
   public delegate float[] DiffFunction(float[] values);
   
-  public static class UpdateFunctions {
+  public static class ActivateFunctions {
+    internal static float Alpha = 0.05f;
+
+    public static float LeakyReLUGrad {
+      set {
+        Alpha = value;
+        ActivateDiffFunctions.Alpha = value;
+      }
+    }
+    
     public static float[] Identity(float[] values) {
       var res = new float[values.Length];
       Parallel.For(0, res.Length, i => { res[i] = values[i]; });
@@ -17,7 +26,7 @@ namespace SharpNN {
     
     public static float[] Tanh(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = MathF.Tanh(values[i]);
+      Parallel.For(0, res.Length, i => { res[i] = MathF.Tanh(values[i]); });
       return res;
     }
 
@@ -29,10 +38,16 @@ namespace SharpNN {
 
     public static float[] ReLU(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = values[i] > 0.0f ? values[i] : 0.0f;
+      Parallel.For(0, res.Length, i => { res[i] = values[i] > 0.0f ? values[i] : 0.0f; });
       return res;
     }
 
+    public static float[] LeakyReLU(float[] values) {
+      var res = new float[values.Length];
+      Parallel.For(0, res.Length, i => { res[i] = values[i] > 0.0f ? values[i] : Alpha * values[i]; });
+      return res;
+    }
+    
     public static float[] Softmax(float[] values) {
       var res = new float[values.Length];
       var max = values.Max();
@@ -43,7 +58,16 @@ namespace SharpNN {
     }
   }
 
-  public static class UpdateDiffFunctions {
+  public static class ActivateDiffFunctions {
+    internal static float Alpha = 0.05f;
+
+    public static float LeakyReLUGrad {
+      set {
+        Alpha = value;
+        ActivateFunctions.Alpha = value;
+      }
+    }
+    
     public static float[] DiffIdentity(float[] values) {
       var res = new float[values.Length];
       Parallel.For(0, res.Length, i => { res[i] = 1.0f; });
@@ -52,7 +76,7 @@ namespace SharpNN {
 
     public static float[] DiffTanh(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = 1.0f - values[i] * values[i];
+      Parallel.For(0, res.Length, i => { res[i] = 1.0f - values[i] * values[i]; });
       return res;
     }
 
@@ -64,7 +88,13 @@ namespace SharpNN {
 
     public static float[] DiffReLU(float[] values) {
       var res = new float[values.Length];
-      for (var i = 0; i < res.Length; i++) res[i] = values[i] > 0.0f ? 1.0f : 0.0f;
+      Parallel.For(0, res.Length, i => { res[i] = values[i] > 0.0f ? 1.0f : 0.0f; });
+      return res;
+    }
+
+    public static float[] DiffLeakyReLU(float[] values) {
+      var res = new float[values.Length];
+      Parallel.For(0, res.Length, i => { res[i] = values[i] > 0.0f ? 1.0f : Alpha; });
       return res;
     }
   }

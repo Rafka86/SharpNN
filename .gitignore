@@ -6,6 +6,7 @@
 **/.idea/shelf/*
 **/.idea/dictionaries
 **/mnist/*
+**/mnist-fashion/*
 
 # Sensitive or high-churn files
 **/.idea/**/dataSources/

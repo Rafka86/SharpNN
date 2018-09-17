@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace SharpNN {
 
@@ -6,13 +7,11 @@ namespace SharpNN {
 
   public static class ErrorFunctions {
     public static float MeanSquared(float[] output, float[] teacher) {
-      var sum = 0.0f;
-      for (var i = 0; i < output.Length; i++) sum += (output[i] - teacher[i]) * (output[i] - teacher[i]);
+      var sum = output.Zip(teacher, (o, t) => (o - t) * (o - t)).Sum();
       return sum * 0.5f;
     }
     public static float CrossEntropy(float[] output, float[] teacher) {
-      var sum = 0.0f;
-      for (var i = 0; i < output.Length; i++) sum += teacher[i] * MathF.Log(output[i] > 1e-8f ? output[i] : 1e-8f);
+      var sum = output.Zip(teacher, (o, t) => t * MathF.Log(o > 1e-8f ? o : 1e-8f)).Sum();
       return -sum;
     }
   }

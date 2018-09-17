@@ -3,10 +3,23 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.1</TargetFramework>
+        <LangVersion>7.3</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\SharpNN\SharpNN.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="mnist-fashion" />
     </ItemGroup>
 
 </Project>

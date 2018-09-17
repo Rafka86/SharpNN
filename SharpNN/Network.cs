@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SharpNN {
 
-  public class Network {
+  public partial class Network {
     private readonly List<Layer> _layers = new List<Layer>();
     private readonly List<Connection> _connections = new List<Connection>();
     private Layer _inputLayer;
@@ -14,37 +15,6 @@ namespace SharpNN {
     
     public int LayersCount => _layers.Count;
     public int ConnectionsCount => _connections.Count;
-
-    public static class Factory {
-      private static Network _network;
-
-      public static void New() => _network = new Network();
-
-      public static void SetErrorFunction(ErrorFunction errFunc) => _network._error = errFunc;
-      
-      public static void AddLayer(int size, UpdateFunction function = null, bool bias = true)
-        => _network._layers.Add(new Layer(size, function ?? UpdateFunctions.ReLU, bias));
-
-      public static void AddConnection(WeightsInitializeFunction initFunction = null) {
-        if (_network._layers.Count < 2) throw new ApplicationException("Not enough layers.");
-        if (_network._layers.Count - 1 == _network._connections.Count)
-          throw new ApplicationException("There are enough connections.");
-        
-        var lastIndex = _network._layers.Count - 1;
-        var preLayer = _network._layers[lastIndex - 1];
-        var postLayer = _network._layers[lastIndex];
-        _network._connections.Add(new Connection(preLayer, postLayer, initFunction ?? WeightsInitializeFunctions.He));
-      }
-      
-      public static Network Create() {
-        if (_network._error == null) throw new ArgumentException("Error function is not defined.");
-        _network._inputLayer = _network._layers[0];
-        _network._outputLayer = _network._layers[_network.LayersCount - 1];
-        return _network;
-      }
-
-      public static void Create(out Network network) => network = Create();
-    }
 
     public void SetInputs(float[] input) {
       for (var i = 0; i < input.Length; i++)
@@ -68,25 +38,64 @@ namespace SharpNN {
         var connection = _connections[i];
         var postLayer = _layers[i + 1];
         
-        connection.CalculationDeltaW(preLayer, postLayer);
+        connection.CalculationDeltaW();
         preLayer.CalculationDelta(postLayer, connection);
       }
     }
 
-    internal void ClearDeltaW() {
+    internal void CopyWeightValues() {
+      var from = _connections[ConnectionsCount - 2];
+      var target = _connections[ConnectionsCount - 1];
+
+      for (var i = 0; i < from.PostLayerSize; i++)
+        for (var j = 0; j < from.PreLayerSize - 1; j++)
+          target[j, i] = from[i, j];
+    }
+    
+    internal void PartialBackPropagation() {
+      var teacherLayer = _layers[LayersCount - 3];
+      _outputLayer.CalculationOutputLayerDelta(teacherLayer.Unit.AsSpan(0, teacherLayer.PureSize).ToArray());
+
+      var lastIndex = LayersCount - 1;
+      _connections[lastIndex - 1].CalculationBiasDeltaW();
+      _layers[lastIndex - 1].CalculationDelta(_layers[lastIndex], _connections[lastIndex - 1]);
+      _connections[lastIndex - 2].CalculationDeltaW();
+    }
+
+    internal void SetOptimizer(Optimizer.Optimizer optimizer) {
+      foreach (var connection in _connections)
+        connection.Optimizer = optimizer.Clone();
+    }
+
+    internal void FinishLearning() {
+      foreach (var connection in _connections)
+        connection.PostProcess();
+    }
+    
+    public void ClearDeltaW() {
       foreach (var connection in _connections)
         connection.ClearDeltaW();
     }
 
-    internal void UpdateWeights(float learningRate) {
+    public void UpdateWeights() {
       foreach (var connection in _connections) {
-        connection.ApplyDeltaW(learningRate);
+        connection.ApplyDeltaW();
       }
+    }
+    
+    internal void UpdatePartialWeights() {
+      _connections[ConnectionsCount - 1].ApplyDeltaW();
+      _connections[ConnectionsCount - 2].ApplyDeltaW();
     }
     
     public float[] Output => _outputLayer.Unit;
 
+    public float[] Input => _inputLayer.Unit.AsSpan(0, _inputLayer.PureSize).ToArray();
+
     public float Error(float[] teacher) => _error(_outputLayer.Unit, teacher);
+
+    internal float Error() => _error(_outputLayer.Unit,
+                                   _layers[LayersCount - 3].Unit.AsSpan(0, _layers[LayersCount - 3].PureSize).ToArray());
 
     public bool CheckStatus() {
       var checkRelNums = LayersCount - 1 == ConnectionsCount;
@@ -94,7 +103,18 @@ namespace SharpNN {
       Console.WriteLine($"# of Layers : {LayersCount}");
       Console.WriteLine($"# of Connections : {ConnectionsCount}");
 
-      return checkRelNums;
+      var checkRelErrAct = true;
+      if (_error.Method.Name == "CrossEntropy") checkRelErrAct = _outputLayer.Function.Method.Name == "Softmax";
+      Console.WriteLine($"Check the relation between error function and output layer activate function. : {checkRelErrAct}");
+      Console.WriteLine($"Error function : {_error.Method.Name}");
+      Console.WriteLine($"Activate function of the output layer : {_outputLayer.Function.Method.Name}");
+
+      return checkRelNums & checkRelErrAct;
+    }
+
+    public void Print(string filePath = null, int dumpLevel = 1) {
+      if (filePath == null) Console.WriteLine(Dump(dumpLevel));
+      else using (var sw = new StreamWriter(filePath)) sw.WriteLine(Dump(dumpLevel));
     }
     
     public string Dump(int dumpLevel = 1) {
