@@ -1,21 +1,15 @@
 using SharpMKL;
 
-using SharpNN.Optimizer;
-
 using static System.Console;
 
 namespace SharpNN {
 
   public static class Trainer {
-    public static Optimizer.Optimizer DefaultOptimizer { get; set; } = new SGD();
-
-    public static void Training(Network network, DataSet.DataSet data, Optimizer.Optimizer optimizer = null,
+    public static void Training(Network network, DataSet.DataSet data,
                                 int epoch = 1, int batchSize = 1, bool printLog = false) {
       var trainingDataSize = data.TrainingDataSize;
       var iterationSize    = trainingDataSize / batchSize;
-      var usedOptimizer = optimizer?.Clone() ?? DefaultOptimizer.Clone();
-      usedOptimizer.LearningRate /= batchSize;
-      network.SetOptimizer(usedOptimizer);
+      network.PrepareForTraining(batchSize);
       for (var i = 0; i < epoch; i++) {
         WriteLine($"Epoch {i}");
         if (printLog) Write("Error : ");
@@ -36,13 +30,11 @@ namespace SharpNN {
       network.FinishLearning();
     }
 
-    public static void Training(Network network, DataSet.DataSet data, Optimizer.Optimizer optimizer = null,
+    public static void Training(Network network, DataSet.DataSet data,
                                 float limitError = 1e-5f, bool printLog = false) {
       var error = float.MaxValue;
       var it    = 0;
-      var usedOptimizer = optimizer?.Clone() ?? DefaultOptimizer.Clone();
-      usedOptimizer.LearningRate /= data.TrainingDataSize;
-      network.SetOptimizer(usedOptimizer);
+      network.PrepareForTraining(data.TrainingDataSize);
       while (error > limitError) {
         if (printLog) WriteLine($"Epoch {it++}");
         error = 0.0f;
@@ -58,43 +50,6 @@ namespace SharpNN {
         if (printLog) WriteLine($"Error : {error: ##0.00000;-##0.00000}");
       }
       network.FinishLearning();
-    }
-
-    public static void PreTraining(Network network, DataSet.DataSet data, Optimizer.Optimizer optimizer = null,
-                                   int epoch = 1, int batchSize = 1, bool printLog = false) {
-      var trainingDataSize = data.TrainingDataSize;
-      var iterationSize    = trainingDataSize / batchSize;
-      var usedOptimizer = optimizer?.Clone() ?? DefaultOptimizer.Clone();
-      usedOptimizer.LearningRate /= batchSize;
-      network.SetOptimizer(usedOptimizer);
-      Network.Factory.DockIn(network);
-      for (var hidLayerSize = 1; hidLayerSize < network.LayersCount - 1; hidLayerSize++) {
-        if (printLog) WriteLine($"Building auto encoder {hidLayerSize}.");
-        var partial = Network.Factory.PartialNetwork(hidLayerSize);
-        partial.SetOptimizer(usedOptimizer);
-        for (var i = 0; i < epoch; i++) {
-          if (printLog) {
-            WriteLine($"Epoch {i}");
-            Write("Error : ");
-          }
-          for (var j = 0; j < iterationSize; j++) {
-            partial.ClearDeltaW();
-            partial.CopyWeightValues();
-            var error = 0.0f;
-            foreach (var datum in data.MiniBatch(batchSize)) {
-              partial.SetInputs(datum.Input);
-              partial.ForwardPropagation();
-              if (printLog) error += partial.Error();
-              partial.PartialBackPropagation();
-            }
-            partial.UpdatePartialWeights();
-            if (printLog) Write($"\rError : {error / batchSize: ##0.00000;-##0.00000}");
-          }
-          if (printLog) WriteLine();
-        }
-        partial.FinishLearning();
-      }
-      Network.Factory.OutOfDock();
     }
 
     public static void RegressionTest(Network network, DataSet.DataSet data) {

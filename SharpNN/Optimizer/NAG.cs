@@ -1,6 +1,6 @@
 using SharpMKL;
 
-namespace SharpNN.Optimizer {
+namespace SharpNN {
 
   public class NAG : Optimizer {
     public float MomentumValue { get; }

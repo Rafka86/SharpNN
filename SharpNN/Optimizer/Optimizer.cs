@@ -1,4 +1,4 @@
-namespace SharpNN.Optimizer {
+namespace SharpNN {
 
   public abstract class Optimizer {
     public float LearningRate { get; set; } = 0.01f;

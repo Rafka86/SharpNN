@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using SharpMKL;
 
-namespace SharpNN.Optimizer {
+namespace SharpNN {
 
   public class RMSProp : Optimizer {
     public float RememberRate { get; }

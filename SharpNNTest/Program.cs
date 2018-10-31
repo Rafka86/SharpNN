@@ -1,12 +1,10 @@
 ﻿using SharpNN;
 using SharpNN.DataSet;
-using SharpNN.Optimizer;
 
 using static System.IO.Path;
 
 using static SharpNN.ErrorFunctions;
 using static SharpNN.ActivateFunctions;
-using static SharpNN.WeightsInitializeFunctions;
 
 namespace SharpNNTest {
 
@@ -19,17 +17,12 @@ namespace SharpNNTest {
       //var imagePath = $"{mnistPath}png{separator}";
       //mnist.OutputImages(imagePath);
 
-      //Trainer.DefaultOptimizer = new AdaDelta();
-      //Trainer.DefaultOptimizer = new RMSProp();
-      //Trainer.DefaultOptimizer = new NAG();
-      Trainer.DefaultOptimizer = new Adam();
+      //Network.Factory.DefalutOptimizer = new Adam();
       
       Network.Factory.New();
       Network.Factory.AddLayer(xor.InputDataSize, Identity);
       Network.Factory.AddLayer(100, ReLU);
-      Network.Factory.AddConnection(He);
-      Network.Factory.AddLayer(xor.OutputDataSize, Identity, false);
-      Network.Factory.AddConnection(He);
+      Network.Factory.AddLayer(xor.OutputDataSize, Identity);
       Network.Factory.SetErrorFunction(MeanSquared);
       Network.Factory.Create(out var network);
 
@@ -39,20 +32,14 @@ namespace SharpNNTest {
       Network.Factory.New();
       Network.Factory.AddLayer(mnist.InputDataSize, Identity);
       Network.Factory.AddLayer(400, ReLU);
-      Network.Factory.AddConnection(He);
       Network.Factory.AddLayer(100, ReLU);
-      Network.Factory.AddConnection(He);
       Network.Factory.AddLayer(50, ReLU);
-      Network.Factory.AddConnection(He);
-      Network.Factory.AddLayer(10, ReLU);
-      Network.Factory.AddConnection(He);
-      Network.Factory.AddLayer(mnist.OutputDataSize, Softmax, false);
-      Network.Factory.AddConnection(He);
+      Network.Factory.AddLayer(mnist.OutputDataSize, Softmax);
       Network.Factory.SetErrorFunction(CrossEntropy);
       Network.Factory.Create(out network);
 
       //Trainer.PreTraining(network, mnist, epoch: 4, batchSize: 30, printLog: true);
-      Trainer.Training(network, mnist, epoch: 5, batchSize: 50, printLog: true);
+      Trainer.Training(network, mnist, epoch: 1, batchSize: 50, printLog: true);
       Trainer.ClusteringTest(network, mnist);
     }
   }

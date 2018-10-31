@@ -1,6 +1,6 @@
 using SharpMKL;
 
-namespace SharpNN.Optimizer {
+namespace SharpNN {
 
   public class SGD : Optimizer {
     public SGD(float learningRate = 0.01f) => LearningRate = learningRate;
