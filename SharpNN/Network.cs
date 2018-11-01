@@ -30,11 +30,6 @@ namespace SharpNN {
         _layers[i].CalculationDelta(_layers[i + 1]);
     }
 
-    internal void PrepareForTraining(int batchSize) {
-      for (var i = 1; i < _layers.Count; i++)
-        _layers[i].PrepareForTraining(batchSize);
-    }
-
     internal void FinishLearning() {
       for (var i = 1; i < _layers.Count; i++)
         _layers[i].PostProcess();

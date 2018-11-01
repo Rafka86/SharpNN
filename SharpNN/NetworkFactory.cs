@@ -9,7 +9,7 @@ namespace SharpNN {
     public static class Factory {
       private static Network _network;
       
-      public static Optimizer DefalutOptimizer { private get; set; } = new NAG();
+      public static Optimizer DefalutOptimizer { get; set; } = new NAG();
 
       public static void New() => _network = new Network();
 
@@ -21,11 +21,11 @@ namespace SharpNN {
                                   Optimizer                 optimizer     = null) {
         var preLayer = _network.LayersCount != 0 ? _network._layers[_network.LayersCount - 1] : null;
         if (preLayer != null) preLayer.IsOutputLayer = false;
-        _network._layers.Add(new Layer(size,
-                                       function ?? ReLU,
-                                       preLayer,
-                                       wInitFunction ?? He,
-                                       optimizer ?? DefalutOptimizer.Clone()));
+        _network._layers.Add(new FullyConnectedLayer(size,
+                                                     function ?? ReLU,
+                                                     preLayer,
+                                                     wInitFunction ?? He,
+                                                     optimizer     ?? DefalutOptimizer.Clone()));
       }
       
       public static Network Create() {

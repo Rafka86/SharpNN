@@ -17,7 +17,7 @@ namespace SharpNNTest {
       //var imagePath = $"{mnistPath}png{separator}";
       //mnist.OutputImages(imagePath);
 
-      //Network.Factory.DefalutOptimizer = new Adam();
+      Network.Factory.DefalutOptimizer = new NAG(0.01f / 4.0f);
       
       Network.Factory.New();
       Network.Factory.AddLayer(xor.InputDataSize, Identity);
@@ -29,6 +29,8 @@ namespace SharpNNTest {
       Trainer.Training(network, xor, limitError: 1e-10f, printLog: true);
       Trainer.RegressionTest(network, xor);
 
+      Network.Factory.DefalutOptimizer.LearningRate = 0.01f / 50.0f;
+      
       Network.Factory.New();
       Network.Factory.AddLayer(mnist.InputDataSize, Identity);
       Network.Factory.AddLayer(400, ReLU);

@@ -9,7 +9,6 @@ namespace SharpNN {
                                 int epoch = 1, int batchSize = 1, bool printLog = false) {
       var trainingDataSize = data.TrainingDataSize;
       var iterationSize    = trainingDataSize / batchSize;
-      network.PrepareForTraining(batchSize);
       for (var i = 0; i < epoch; i++) {
         WriteLine($"Epoch {i}");
         if (printLog) Write("Error : ");
@@ -34,7 +33,6 @@ namespace SharpNN {
                                 float limitError = 1e-5f, bool printLog = false) {
       var error = float.MaxValue;
       var it    = 0;
-      network.PrepareForTraining(data.TrainingDataSize);
       while (error > limitError) {
         if (printLog) WriteLine($"Epoch {it++}");
         error = 0.0f;
